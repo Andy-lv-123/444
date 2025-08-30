@@ -1,0 +1,1058 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>绿通农产品查询系统 
+           开发者吕文宇</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 10px;
+            background-color: #f5f5f5;
+            color: #333;
+            -webkit-text-size-adjust: 100%;
+        }
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 0 5px rgba(0,0,0,0.1);
+            position: relative;
+        }
+        .developer-tag {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background-color: #81c784;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2e7d32;
+            text-align: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #2e7d32;
+            padding-bottom: 8px;
+            font-size: 1.5rem;
+            padding-right: 70px;
+        }
+        .search-section {
+            background-color: #e8f5e9;
+            padding: 12px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+        .search-box {
+            display: flex;
+            margin-bottom: 12px;
+        }
+        #search-input {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px 0 0 4px;
+            font-size: 14px;
+        }
+        #search-btn {
+            padding: 8px 15px;
+            background-color: #2e7d32;
+            color: white;
+            border: none;
+            border-radius: 0 4px 4px 0;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        #search-btn:hover {
+            background-color: #1b5e20;
+        }
+        .filter-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 8px;
+            overflow-x: auto;
+            padding-bottom: 5px;
+            -webkit-overflow-scrolling: touch;
+        }
+        .filter-options::-webkit-scrollbar {
+            height: 3px;
+        }
+        .filter-btn {
+            padding: 4px 8px;
+            background-color: #81c784;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            white-space: nowrap;
+        }
+        .filter-btn:hover {
+            background-color: #66bb6a;
+        }
+        .filter-btn.active {
+            background-color: #2e7d32;
+        }
+        .results-section {
+            margin-top: 15px;
+        }
+        .category {
+            margin-bottom: 20px;
+        }
+        .category-title {
+            background-color: #a5d6a7;
+            padding: 8px 12px;
+            border-radius: 5px;
+            font-weight: bold;
+            color: #1b5e20;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        .products {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100%, 1fr));
+            gap: 10px;
+        }
+        .product-card {
+            background-color: #fff;
+            border: 1px solid #c8e6c9;
+            border-radius: 5px;
+            padding: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        .product-name {
+            font-weight: bold;
+            color: #2e7d32;
+            margin-bottom: 5px;
+            font-size: 15px;
+        }
+        .aliases {
+            color: #666;
+            font-size: 13px;
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+        .aliases strong {
+            color: #333;
+        }
+        .no-results {
+            text-align: center;
+            padding: 15px;
+            color: #666;
+            font-style: italic;
+            font-size: 14px;
+        }
+        .developer {
+            text-align: center;
+            margin-top: 15px;
+            color: #666;
+            font-size: 12px;
+        }
+        
+        /* 针对小屏幕手机的优化 */
+        @media (max-width: 360px) {
+            h1 {
+                font-size: 1.3rem;
+            }
+            #search-input, #search-btn {
+                padding: 6px;
+                font-size: 13px;
+            }
+            .filter-btn {
+                font-size: 11px;
+                padding: 3px 6px;
+            }
+            .product-card {
+                padding: 10px;
+            }
+            .product-name {
+                font-size: 14px;
+            }
+            .aliases {
+                font-size: 12px;
+            }
+            .developer-tag {
+                font-size: 11px;
+                padding: 3px 6px;
+                top: 12px;
+                right: 12px;
+            }
+        }
+        
+        /* 针对中等屏幕手机的优化 */
+        @media (min-width: 361px) and (max-width: 480px) {
+            .products {
+                grid-template-columns: repeat(auto-fill, minmax(100%, 1fr));
+            }
+        }
+        
+        /* 针对大屏幕手机的优化 */
+        @media (min-width: 481px) {
+            .products {
+                grid-template-columns: repeat(auto-fill, minmax(48%, 1fr));
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="developer-tag">开发者：吕文宇</div>
+        
+        <h1>绿通农产品查询系统</h1>
+        
+        <div class="search-section">
+            <div class="search-box">
+                <input type="text" id="search-input" placeholder="输入农产品名称、别名或商品名...">
+                <button id="search-btn">搜索</button>
+            </div>
+            <div class="filter-options">
+                <button class="filter-btn active" data-category="all">全部</button>
+                <button class="filter-btn" data-category="vegetable">新鲜蔬菜</button>
+                <button class="filter-btn" data-category="fruit">新鲜水果</button>
+                <button class="filter-btn" data-category="aquatic">鲜活水产品</button>
+                <button class="filter-btn" data-category="livestock">活的畜禽</button>
+                <button class="filter-btn" data-category="fresh">新鲜肉蛋奶</button>
+                <button class="filter-btn" data-category="cabbage">白菜类</button>
+                <button class="filter-btn" data-category="legume">豆类</button>
+                <button class="filter-btn" data-category="melon">瓜类</button>
+                <button class="filter-btn" data-category="perennial">多年生类</button>
+                <button class="filter-btn" data-category="tomato">茄果类</button>
+                <button class="filter-btn" data-category="root">根茎类</button>
+                <button class="filter-btn" data-category="greens">绿叶菜类</button>
+                <button class="filter-btn" data-category="onion">葱蒜类</button>
+                <button class="filter-btn" data-category="mushroom">食用菌类</button>
+                <button class="filter-btn" data-category="water">水生蔬菜</button>
+            </div>
+        </div>
+        
+        <div class="results-section" id="results">
+            <!-- 结果将在这里动态生成 -->
+        </div>
+        
+        <div class="developer">开发人：吕文宇
+                                 广东省路桥建设有限公司云梧分公司</div>
+    </div>
+
+    <script>
+        // 完整的农产品数据库
+        const productsDatabase = [
+            // 白菜类
+            {
+                category: "cabbage",
+                name: "大白菜",
+                aliases: ["结球白菜", "黄芽菜", "包心白菜", "娃娃菜", "快菜", "黄矮菜", "水白菜", "黄泥白", "麻叶菜", "翻心黄", "黄芽白", "齐心白"]
+            },
+            {
+                category: "cabbage",
+                name: "普通白菜",
+                aliases: ["不结球白菜", "小白菜", "油菜", "青菜", "青梗菜", "鸡毛菜", "瓢菜", "瓢儿白", "瓢儿菜", "上海青"]
+            },
+            {
+                category: "cabbage",
+                name: "菜薹",
+                aliases: ["菜心", "菜蕻儿", "大股子", "红菜薹", "绿菜薹"]
+            },
+            
+            // 甘蓝类
+            {
+                category: "vegetable",
+                name: "菜花",
+                aliases: ["花菜", "花椰菜", "白花菜", "松花菜", "椰花菜", "花甘蓝", "洋花菜"]
+            },
+            {
+                category: "vegetable",
+                name: "芥蓝",
+                aliases: ["白花芥蓝", "芥兰", "芥兰薹"]
+            },
+            {
+                category: "vegetable",
+                name: "青花菜",
+                aliases: ["西兰花", "菜花", "绿花菜", "绿花椰菜", "茎椰菜"]
+            },
+            {
+                category: "vegetable",
+                name: "结球甘蓝",
+                aliases: ["包菜", "洋白菜", "卷心菜", "圆白菜", "高丽菜", "莲花白", "牛心菜", "包头菜", "钵钵菜", "嘎达白", "茴子白", "疙瘩白", "大头菜", "刚白菜", "椰菜"]
+            },
+            
+            // 根菜类
+            {
+                category: "root",
+                name: "萝卜",
+                aliases: ["莱菔", "葵", "大萝卜", "白萝卜", "青萝卜", "心里美", "辣萝卜", "水果萝卜", "菜头", "红丁"]
+            },
+            {
+                category: "root",
+                name: "胡萝卜",
+                aliases: ["红萝卜", "黄萝卜"]
+            },
+            {
+                category: "root",
+                name: "芜菁",
+                aliases: ["芥菜疙瘩", "疙瘩菜", "恰玛古", "盘菜", "蔓菁"]
+            },
+            
+            // 绿叶菜类
+            {
+                category: "greens",
+                name: "芹菜",
+                aliases: ["西芹", "本芹", "白芹", "黄芹", "玻璃脆", "胡芹", "香芹", "富菜"]
+            },
+            {
+                category: "greens",
+                name: "菠菜",
+                aliases: ["波斯菜", "赤根菜", "鹦鹉菜", "尖角菜", "波斯草", "圆杆菠菜", "刺杆菠菜", "扯根菜"]
+            },
+            {
+                category: "greens",
+                name: "莴笋",
+                aliases: ["茎用莴苣", "莴苣", "莴苣笋", "青笋"]
+            },
+            {
+                category: "greens",
+                name: "生菜",
+                aliases: ["叶用莴苣", "鹅仔菜", "唛仔菜", "莴苣菜", "鸡窝菜", "盘子菜", "油麦菜"]
+            },
+            {
+                category: "greens",
+                name: "空心菜",
+                aliases: ["蕹菜", "藤藤菜", "藤儿菜", "通菜蓊", "蓊菜", "通菜"]
+            },
+            {
+                category: "greens",
+                name: "香菜",
+                aliases: ["芫荽", "胡荽", "香荽", "延荽", "芫茜", "臭菜"]
+            },
+            {
+                category: "greens",
+                name: "茼蒿",
+                aliases: ["蒿子秆", "蓬蒿", "蒿菜", "菊花菜", "塘蒿", "蒿子", "蓬花菜", "桐花菜", "鹅菜", "义菜"]
+            },
+            {
+                category: "greens",
+                name: "茴香",
+                aliases: ["大茴香", "小茴香", "八月珠", "舶茴香", "八角香"]
+            },
+            {
+                category: "greens",
+                name: "苋菜",
+                aliases: ["马齿苋", "大叶苋菜", "绿苋菜", "白苋菜", "红苋菜", "玉谷菜", "雁来红", "老少年", "老来少", "马马菜"]
+            },
+            {
+                category: "greens",
+                name: "木耳菜",
+                aliases: ["潺菜", "落葵", "豆腐菜", "紫角叶"]
+            },
+            
+            // 葱蒜类
+            {
+                category: "onion",
+                name: "洋葱",
+                aliases: ["葱头", "圆葱", "玉葱", "元葱", "洋蒜", "皮牙子"]
+            },
+            {
+                category: "onion",
+                name: "大葱",
+                aliases: ["葱", "青葱", "钢杆葱", "鸡腿葱", "发芽葱"]
+            },
+            {
+                category: "onion",
+                name: "香葱",
+                aliases: ["小葱", "分葱", "细香葱", "四季葱"]
+            },
+            {
+                category: "onion",
+                name: "蒜苗",
+                aliases: ["蒜黄", "青蒜", "大蒜苗"]
+            },
+            {
+                category: "onion",
+                name: "蒜苔",
+                aliases: ["蒜薹", "蒜毫", "蒜苓"]
+            },
+            {
+                category: "onion",
+                name: "韭菜",
+                aliases: ["起阳草", "韭黄"]
+            },
+            {
+                category: "onion",
+                name: "大蒜",
+                aliases: ["蒜瓣", "蒜头", "蒜球", "独头蒜", "胡蒜", "大蒜子"]
+            },
+            {
+                category: "onion",
+                name: "生姜",
+                aliases: ["姜", "大姜", "黄姜", "老姜", "辣姜"]
+            },
+            
+            // 茄果类
+            {
+                category: "tomato",
+                name: "茄子",
+                aliases: ["圆茄", "长茄", "长茄子", "圆茄子", "矮瓜", "吊菜子", "落苏", "六蔬", "茄瓜"]
+            },
+            {
+                category: "tomato",
+                name: "青椒",
+                aliases: ["柿子椒", "甜椒", "菜椒", "灯笼椒", "方椒", "油椒", "彩椒", "大椒"]
+            },
+            {
+                category: "tomato",
+                name: "辣椒",
+                aliases: ["辣子", "尖椒", "胡椒", "尖辣子", "牛角椒", "羊角椒", "线椒", "小米椒", "长辣椒", "番椒", "番姜", "海椒", "辣角", "秦椒", "朝天椒"]
+            },
+            {
+                category: "tomato",
+                name: "番茄",
+                aliases: ["西红柿", "洋柿子", "火柿子", "柿子", "番柿", "狼茄", "海茄"]
+            },
+            {
+                category: "tomato",
+                name: "樱桃番茄",
+                aliases: ["圣女果", "小西红柿", "小柿子", "洋枣", "小番茄"]
+            },
+            
+            // 豆类
+            {
+                category: "legume",
+                name: "扁豆",
+                aliases: ["藤豆", "沿篱豆", "鹊豆", "蛾眉豆"]
+            },
+            {
+                category: "legume",
+                name: "荚豆",
+                aliases: ["眉豆"]
+            },
+            {
+                category: "legume",
+                name: "豇豆",
+                aliases: ["长豆角", "豆角", "长虹豆", "豆橛子", "带豆", "豆角子"]
+            },
+            {
+                category: "legume",
+                name: "豌豆",
+                aliases: ["荷兰豆", "青斑豆", "何豆", "小寒豆", "淮豆", "麻豆", "金豆", "回回豆"]
+            },
+            {
+                category: "legume",
+                name: "四季豆",
+                aliases: ["芸豆", "菜豆", "刀豆", "二季豆", "无筋豆", "架豆", "芸扁豆", "白不老", "油豆角"]
+            },
+            {
+                category: "legume",
+                name: "毛豆",
+                aliases: ["菜用大豆", "青豆", "枝豆", "黄豆", "鲜食大豆", "菜青豆", "青皮豆", "豆青", "豆子"]
+            },
+            {
+                category: "legume",
+                name: "蚕豆",
+                aliases: ["南豆", "胡豆", "佛豆", "罗汉豆", "大豌豆"]
+            },
+            {
+                category: "legume",
+                name: "豆芽",
+                aliases: ["豆芽菜", "芽苗菜", "黄豆芽", "绿豆芽", "巧芽", "如意菜", "掐菜", "银芽", "银针", "银苗", "芽心", "大豆芽", "清水豆芽"]
+            },
+            {
+                category: "legume",
+                name: "豌豆苗",
+                aliases: ["龙须菜", "豌豆尖", "安豆苗", "豌豆头"]
+            },
+            {
+                category: "legume",
+                name: "四棱豆",
+                aliases: ["皇帝豆", "香龙豆", "四角豆", "热带大豆", "翼豆", "四稔豆", "翅豆", "杨桃豆"]
+            },
+            
+            // 瓜类
+            {
+                category: "melon",
+                name: "黄瓜",
+                aliases: ["青瓜", "胡瓜", "王瓜", "刺瓜", "勤瓜", "唐瓜", "水黄瓜"]
+            },
+            {
+                category: "melon",
+                name: "丝瓜",
+                aliases: ["水瓜", "棱丝瓜", "天丝瓜", "天罗", "布瓜", "蛮瓜"]
+            },
+            {
+                category: "melon",
+                name: "冬瓜",
+                aliases: ["毛冬瓜", "石瓜"]
+            },
+            {
+                category: "melon",
+                name: "西葫芦",
+                aliases: ["美洲南瓜", "搅瓜", "三月瓜", "小瓜", "菜瓜", "角瓜", "茭瓜", "熊（雄）瓜", "窝瓜", "荀瓜", "葫芦瓜"]
+            },
+            {
+                category: "melon",
+                name: "苦瓜",
+                aliases: ["凉瓜", "癞葡萄", "锦荔枝", "癞瓜", "君子菜"]
+            },
+            {
+                category: "melon",
+                name: "南瓜",
+                aliases: ["倭瓜", "倭葫芦", "番瓜", "玉瓜", "吊瓜", "方瓜", "金瓜", "饭瓜", "番南瓜", "北瓜", "谢花面"]
+            },
+            {
+                category: "melon",
+                name: "佛手瓜",
+                aliases: ["合手瓜", "合掌瓜", "丰收瓜", "洋瓜", "捧瓜", "土耳瓜"]
+            },
+            {
+                category: "melon",
+                name: "蛇瓜",
+                aliases: ["蛇豆", "蛇丝瓜", "大豆角", "蛇豆角"]
+            },
+            {
+                category: "melon",
+                name: "节瓜",
+                aliases: ["小冬瓜", "毛瓜", "毛节瓜"]
+            },
+            {
+                category: "melon",
+                name: "瓠瓜",
+                aliases: ["瓠", "瓠子", "葫芦", "小葫芦", "大葫芦", "瓠子瓜", "扁蒲", "夜开花", "瓢瓜", "长瓜"]
+            },
+            
+            // 水生蔬菜类
+            {
+                category: "water",
+                name: "莲藕",
+                aliases: ["藕", "藕节", "湖藕", "果藕", "菜藕", "莲菜", "莲生菜", "莲根"]
+            },
+            {
+                category: "water",
+                name: "荸荠",
+                aliases: ["马蹄", "地栗", "乌芋", "菩荠", "荠米"]
+            },
+            {
+                category: "water",
+                name: "水芹",
+                aliases: ["水芹菜", "野芹菜", "水英", "细本山芹菜", "牛草", "楚葵", "刀芹", "蜀芹", "野芹菜"]
+            },
+            {
+                category: "water",
+                name: "茭白",
+                aliases: ["茭笋", "菰笋", "菰米", "茭儿菜", "菰实", "菰菜", "高笋"]
+            },
+            
+            // 新鲜食用菌类
+            {
+                category: "mushroom",
+                name: "香菇",
+                aliases: ["花菇", "天白花菇", "茶花菇", "水菇", "冬菇", "冬菰", "香蕈", "香信", "椎茸", "白面菇", "黑面菇"]
+            },
+            {
+                category: "mushroom",
+                name: "平菇",
+                aliases: ["侧耳", "糙皮侧耳", "北风菌", "冻菌"]
+            },
+            {
+                category: "mushroom",
+                name: "金针菇",
+                aliases: ["冬菇", "构菌", "毛柄金钱菌", "金菇", "增智菇"]
+            },
+            {
+                category: "mushroom",
+                name: "滑菇",
+                aliases: ["珍珠菇", "滑子菇", "滑子蘑", "光帽鳞伞"]
+            },
+            {
+                category: "mushroom",
+                name: "双孢蘑菇",
+                aliases: ["白蘑菇", "双孢菇", "洋蘑菇"]
+            },
+            {
+                category: "mushroom",
+                name: "木耳",
+                aliases: ["红木耳", "光木耳", "云耳", "木耳菇"]
+            },
+            
+            // 多年生和杂类蔬菜
+            {
+                category: "perennial",
+                name: "竹笋",
+                aliases: ["笋", "玉兰"]
+            },
+            {
+                category: "perennial",
+                name: "芦笋",
+                aliases: ["石刁柏", "狄笋", "南荻笋"]
+            },
+            {
+                category: "perennial",
+                name: "金针菜",
+                aliases: ["黄花菜", "萱草"]
+            },
+            {
+                category: "perennial",
+                name: "香椿",
+                aliases: ["椿", "香椿芽", "春芽", "香椿头"]
+            },
+            
+            // 其他类
+            {
+                category: "vegetable",
+                name: "马铃薯",
+                aliases: ["土豆", "山药蛋", "洋芋", "地蛋", "地豆", "洋山芋"]
+            },
+            {
+                category: "vegetable",
+                name: "甘薯",
+                aliases: ["红薯", "地瓜", "白薯", "甜薯", "红苕", "番薯", "红芋"]
+            },
+            {
+                category: "vegetable",
+                name: "山药",
+                aliases: ["怀山药", "怀山", "淮山药", "淮山", "薯蓣", "薯药", "山薯", "脚板苕"]
+            },
+            {
+                category: "vegetable",
+                name: "芋头",
+                aliases: ["芋", "毛芋", "芋艿", "芋子", "芋奶", "家芋", "香芋", "槟榔芋", "芋魁", "蹲鸱"]
+            },
+            {
+                category: "vegetable",
+                name: "鲜玉米",
+                aliases: ["苞米", "嫩棒子", "包谷", "麻英", "麻拂拂", "粟米", "番麦", "珍珠粒", "水果玉米", "玉米棒"]
+            },
+            {
+                category: "vegetable",
+                name: "鲜花生",
+                aliases: ["落花生", "长果", "长生果", "泥豆", "番豆", "鲜落生"]
+            },
+            
+            // 新鲜水果 - 仁果类
+            {
+                category: "fruit",
+                name: "苹果",
+                aliases: ["红富士", "蛇果", "花牛", "寒富", "青香蕉", "七月鲜", "沙果", "嘎啦", "红将军苹果", "金帅苹果", "乔纳金果", "红星苹果", "国光苹果", "红玉苹果", "澳洲青苹", "冰糖心苹果", "元帅苹果", "金冠苹果", "维纳斯黄金", "华冠苹果", "王林"]
+            },
+            {
+                category: "fruit",
+                name: "梨",
+                aliases: ["酥梨", "砀山酥梨", "鸭梨", "香梨", "库尔勒香梨", "贡梨", "蜜梨", "南果梨", "黄冠梨", "翠冠梨", "雪花梨", "苍溪雪梨", "白梨", "砂梨", "秋月梨", "褐梨", "苹果梨"]
+            },
+            {
+                category: "fruit",
+                name: "海棠",
+                aliases: ["鸡心果"]
+            },
+            {
+                category: "fruit",
+                name: "山楂",
+                aliases: ["山里红", "红果", "山里果"]
+            },
+            
+            // 核果类
+            {
+                category: "fruit",
+                name: "桃",
+                aliases: ["蟠桃", "油桃", "寿星桃", "山桃", "毛桃", "黄桃", "水蜜桃", "碧桃"]
+            },
+            {
+                category: "fruit",
+                name: "李",
+                aliases: ["布朗", "黑布林", "中国李", "杏李", "欧洲李", "美洲李", "西梅", "新梅", "榛", "恐龙蛋"]
+            },
+            {
+                category: "fruit",
+                name: "杏",
+                aliases: ["山杏", "藏杏", "紫杏", "东北杏", "梅", "凯特杏", "金太阳杏", "岱玉杏"]
+            },
+            {
+                category: "fruit",
+                name: "杨梅",
+                aliases: ["杨梅豆", "毛杨梅", "青杨梅", "矮杨梅", "大杨梅", "乌杨梅"]
+            },
+            {
+                category: "fruit",
+                name: "樱桃",
+                aliases: ["莺桃", "含桃", "荆桃", "毛樱桃", "车厘子"]
+            },
+            
+            // 浆果类
+            {
+                category: "fruit",
+                name: "葡萄",
+                aliases: ["提子", "红提", "黑提", "青提", "巨峰", "先锋", "玫瑰香", "阳光玫瑰", "茉莉香", "红地球", "夏黑", "无核白鸡心", "木纳格", "户太八号", "金手指", "牛奶", "藤稔", "美人指", "蓝宝石", "维多利亚", "京亚"]
+            },
+            {
+                category: "fruit",
+                name: "草莓",
+                aliases: ["白草莓"]
+            },
+            {
+                category: "fruit",
+                name: "猕猴桃",
+                aliases: ["奇异果", "毛梨", "软枣猕猴桃"]
+            },
+            {
+                category: "fruit",
+                name: "石榴",
+                aliases: ["软籽石榴", "玛瑙石榴", "楼子石榴", "墨石榴", "天红蛋", "粉红石榴", "铜壳石榴", "红壳石榴", "青壳石榴", "并蒂石榴"]
+            },
+            {
+                category: "fruit",
+                name: "桑葚",
+                aliases: ["桑果", "桑枣", "桑实", "桑子"]
+            },
+            
+            // 柑橘类
+            {
+                category: "fruit",
+                name: "橙",
+                aliases: ["甜橙", "脐橙", "酸橙", "血橙", "宜昌橙", "冰糖橙", "红橙", "柳橙", "锦橙", "夏橙", "改良橙", "梨橙", "晚棱脐橙", "卡拉卡拉脐橙", "特罗维塔甜橙", "青秋脐橙", "长叶香橙", "红韵香柑", "哈姆林甜橙", "华盛顿脐橙"]
+            },
+            {
+                category: "fruit",
+                name: "桔（橘）",
+                aliases: ["砂糖橘", "马水桔", "红橘", "贡桔", "温州蜜桔", "温州蜜柑", "南丰蜜桔", "椪柑", "蕉柑"]
+            },
+            {
+                category: "fruit",
+                name: "柑",
+                aliases: ["潮州柑", "贡柑", "皇帝柑", "沃柑", "芦柑", "茂谷柑", "默科特", "阳光一号", "大雅柑", "春见", "清见", "爱媛", "果冻橙", "耙耙柑", "丑柑", "红美人", "不知火", "金柑", "金弹", "金桔", "罗浮", "长寿金柑", "脆蜜金柑"]
+            },
+            {
+                category: "fruit",
+                name: "柚",
+                aliases: ["金柚", "沙田柚", "青柚", "蜜柚", "梁平柚", "垫江晚柚", "垫江白柚", "红心柚", "虎蜜柚", "五布柚", "三红柚", "葡萄柚", "西柚", "橘柚", "橙柚", "长寿柚", "琯溪蜜柚", "龙安柚", "鸡尾葡萄柚", "矮晚柚"]
+            },
+            {
+                category: "fruit",
+                name: "柠檬",
+                aliases: ["尤力克柠檬", "香水柠檬", "莱檬", "柃檬", "枸橼", "檬檬", "来檬", "绿檬", "佛手"]
+            },
+            
+            // 热带及亚热带水果
+            {
+                category: "fruit",
+                name: "香蕉",
+                aliases: ["甘蕉", "甜蕉"]
+            },
+            {
+                category: "fruit",
+                name: "大蕉",
+                aliases: ["龙牙蕉", "酸蕉", "酸芭蕉", "牛角蕉", "美食蕉"]
+            },
+            {
+                category: "fruit",
+                name: "金香蕉",
+                aliases: ["贡蕉", "皇帝蕉", "玫瑰蕉", "佳丽蕉"]
+            },
+            {
+                category: "fruit",
+                name: "粉蕉",
+                aliases: ["糯米蕉", "苹果蕉"]
+            },
+            {
+                category: "fruit",
+                name: "菠萝",
+                aliases: ["凤梨", "黄梨", "番梨", "露兜子"]
+            },
+            {
+                category: "fruit",
+                name: "龙眼",
+                aliases: ["桂圆", "益智果"]
+            },
+            {
+                category: "fruit",
+                name: "荔枝",
+                aliases: ["离枝", "丹荔", "荔支", "荔果"]
+            },
+            {
+                category: "fruit",
+                name: "橄榄",
+                aliases: ["黄榄", "青果", "山榄", "白榄", "红榄", "青子"]
+            },
+            {
+                category: "fruit",
+                name: "枇杷",
+                aliases: ["卢桔", "金丸", "芦枝"]
+            },
+            {
+                category: "fruit",
+                name: "椰子",
+                aliases: ["胥余", "椰青"]
+            },
+            {
+                category: "fruit",
+                name: "芒果",
+                aliases: ["杧果", "檬果", "莽果", "庵罗果"]
+            },
+            {
+                category: "fruit",
+                name: "杨桃",
+                aliases: ["羊桃", "五敛子", "星星果", "五棱子", "洋桃", "阳桃"]
+            },
+            {
+                category: "fruit",
+                name: "木瓜",
+                aliases: ["番木瓜", "万寿果", "乳瓜"]
+            },
+            {
+                category: "fruit",
+                name: "火龙果",
+                aliases: ["红龙果", "龙珠果", "仙蜜果", "玉龙果"]
+            },
+            {
+                category: "fruit",
+                name: "番石榴",
+                aliases: ["芭乐", "鸡矢果", "拔仔", "花稔"]
+            },
+            {
+                category: "fruit",
+                name: "莲雾",
+                aliases: ["洋蒲桃", "琏雾", "爪哇蒲桃"]
+            },
+            
+            // 什果类
+            {
+                category: "fruit",
+                name: "枣",
+                aliases: ["鲜枣", "冬枣", "脆枣", "青枣", "蟠枣", "南疆红", "七月鲜"]
+            },
+            {
+                category: "fruit",
+                name: "柿子",
+                aliases: ["鸡心黄柿子", "镜面柿", "四周柿", "罗田甜柿", "尖柿", "牛心柿"]
+            },
+            {
+                category: "fruit",
+                name: "无花果",
+                aliases: ["蓬莱柿", "青皮", "布兰瑞克", "新疆早黄", "金傲芬", "日紫", "波姬红"]
+            },
+            
+            // 瓜果类
+            {
+                category: "fruit",
+                name: "西瓜",
+                aliases: ["红心西瓜", "黄心西瓜", "麒麟瓜"]
+            },
+            {
+                category: "fruit",
+                name: "甜瓜",
+                aliases: ["哈密瓜", "香瓜", "伊丽莎白瓜", "华莱士瓜", "网纹瓜", "白兰瓜", "蜜瓜", "河套瓜", "银瓜", "芝麻香", "九里香", "羊角蜜", "玫珑", "雪玉", "玉奶瓜", "绿宝石", "黄宝石", "甜宝"]
+            },
+            
+            // 鲜活水产品
+            {
+                category: "aquatic",
+                name: "鱼类",
+                aliases: []
+            },
+            {
+                category: "aquatic",
+                name: "虾类",
+                aliases: []
+            },
+            {
+                category: "aquatic",
+                name: "贝类",
+                aliases: []
+            },
+            {
+                category: "aquatic",
+                name: "蟹类",
+                aliases: []
+            },
+            {
+                category: "aquatic",
+                name: "其他水产品",
+                aliases: ["海带", "紫菜", "海蜇", "海参"]
+            },
+            
+            // 活的畜禽
+            {
+                category: "livestock",
+                name: "仔猪",
+                aliases: []
+            },
+            {
+                category: "livestock",
+                name: "蜜蜂",
+                aliases: ["转地放蜂"]
+            },
+            
+            // 新鲜的肉、蛋、奶
+            {
+                category: "fresh",
+                name: "新鲜鸡蛋",
+                aliases: []
+            },
+            {
+                category: "fresh",
+                name: "新鲜鸭蛋",
+                aliases: []
+            },
+            {
+                category: "fresh",
+                name: "新鲜鹅蛋",
+                aliases: []
+            },
+            {
+                category: "fresh",
+                name: "新鲜鹌鹑蛋",
+                aliases: []
+            },
+            {
+                category: "fresh",
+                name: "新鲜鸽蛋",
+                aliases: []
+            },
+            {
+                category: "fresh",
+                name: "新鲜家禽肉",
+                aliases: []
+            },
+            {
+                category: "fresh",
+                name: "新鲜家畜肉",
+                aliases: []
+            },
+            {
+                category: "fresh",
+                name: "生鲜乳",
+                aliases: []
+            }
+        ];
+
+        // 页面加载时显示所有产品
+        document.addEventListener('DOMContentLoaded', function() {
+            displayProducts(productsDatabase);
+            
+            // 搜索功能
+            document.getElementById('search-btn').addEventListener('click', function() {
+                const searchTerm = document.getElementById('search-input').value.trim().toLowerCase();
+                if (searchTerm === '') {
+                    displayProducts(productsDatabase);
+                    return;
+                }
+                
+                const filteredProducts = productsDatabase.filter(product => {
+                    // 名称匹配（忽略大小写）
+                    const nameMatch = product.name.toLowerCase().includes(searchTerm);
+                    
+                    // 别名匹配（忽略大小写）
+                    const aliasMatch = product.aliases.some(alias => 
+                        alias.toLowerCase().includes(searchTerm)
+                    );
+                    
+                    return nameMatch || aliasMatch;
+                });
+                
+                displayProducts(filteredProducts);
+            });
+            
+            // 回车键触发搜索
+            document.getElementById('search-input').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    document.getElementById('search-btn').click();
+                }
+            });
+            
+            // 分类筛选功能
+            const filterButtons = document.querySelectorAll('.filter-btn');
+            filterButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // 更新按钮状态
+                    filterButtons.forEach(btn => btn.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    const category = this.getAttribute('data-category');
+                    if (category === 'all') {
+                        displayProducts(productsDatabase);
+                    } else {
+                        const filteredProducts = productsDatabase.filter(product => product.category === category);
+                        displayProducts(filteredProducts);
+                    }
+                });
+            });
+        });
+        
+        // 显示产品函数
+        function displayProducts(products) {
+            const resultsSection = document.getElementById('results');
+            resultsSection.innerHTML = '';
+            
+            if (products.length === 0) {
+                resultsSection.innerHTML = '<div class="no-results">没有找到匹配的农产品</div>';
+                return;
+            }
+            
+            // 按分类分组
+            const categories = {};
+            products.forEach(product => {
+                if (!categories[product.category]) {
+                    categories[product.category] = [];
+                }
+                categories[product.category].push(product);
+            });
+            
+            // 显示每个分类的产品
+            for (const category in categories) {
+                const categoryDiv = document.createElement('div');
+                categoryDiv.className = 'category';
+                
+                let categoryTitle = '';
+                switch(category) {
+                    case 'vegetable': categoryTitle = '新鲜蔬菜'; break;
+                    case 'fruit': categoryTitle = '新鲜水果'; break;
+                    case 'aquatic': categoryTitle = '鲜活水产品'; break;
+                    case 'livestock': categoryTitle = '活的畜禽'; break;
+                    case 'fresh': categoryTitle = '新鲜肉蛋奶'; break;
+                    case 'cabbage': categoryTitle = '白菜类'; break;
+                    case 'legume': categoryTitle = '豆类'; break;
+                    case 'melon': categoryTitle = '瓜类'; break;
+                    case 'perennial': categoryTitle = '多年生类'; break;
+                    case 'tomato': categoryTitle = '茄果类'; break;
+                    case 'root': categoryTitle = '根茎类'; break;
+                    case 'greens': categoryTitle = '绿叶菜类'; break;
+                    case 'onion': categoryTitle = '葱蒜类'; break;
+                    case 'mushroom': categoryTitle = '食用菌类'; break;
+                    case 'water': categoryTitle = '水生蔬菜'; break;
+                    default: categoryTitle = category;
+                }
+                
+                categoryDiv.innerHTML = `<div class="category-title">${categoryTitle}</div>`;
+                
+                const productsDiv = document.createElement('div');
+                productsDiv.className = 'products';
+                
+                categories[category].forEach(product => {
+                    const productCard = document.createElement('div');
+                    productCard.className = 'product-card';
+                    
+                    let aliasesHtml = '';
+                    if (product.aliases && product.aliases.length > 0) {
+                        aliasesHtml = `<div class="aliases"><strong>别名/商品名：</strong>${product.aliases.join('、')}</div>`;
+                    }
+                    
+                    productCard.innerHTML = `
+                        <div class="product-name">${product.name}</div>
+                        ${aliasesHtml}
+                    `;
+                    
+                    productsDiv.appendChild(productCard);
+                });
+                
+                categoryDiv.appendChild(productsDiv);
+                resultsSection.appendChild(categoryDiv);
+            }
+        }
+    </script>
+</body>
+</html>
